@@ -1,0 +1,203 @@
+pipeline {
+    agent any
+    
+    tools{
+        nodejs 'nodejs23'
+    }
+    
+    environment {
+        
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    
+        stages {
+        stage('Github clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/adi-github07/prod.git'
+                script {
+
+                    env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+
+
+          stage('Frntned') {
+            steps {
+                dir('client') {
+                    sh 'find . -name "*.js" -exec node --check {} +'
+}
+            }
+        }
+        
+                  stage('Backend') {
+            steps {
+                dir('api') {
+                    sh 'find . -name "*.js" -exec node --check {} +'
+}
+            }
+        }
+        
+        
+                stage('Gitleaks') {
+            steps {
+                sh 'gitleaks detect --source ./client --exit-code 1'
+                sh 'gitleaks detect --source ./api --exit-code 1'
+            }
+        }
+        
+        
+                      
+        stage('sonar') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=NodeJS-Project \
+                        -Dsonar.projectKey=NodeJS-Project'''
+                }
+            }
+        }
+
+        //           stage('QualityGate') {
+        //     steps {
+        //         timeout(time: 1, unit: 'HOURS') {
+        //             waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+        //         }
+        //     }
+        // }
+        
+          stage('Trivy Scn') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+        
+
+        stage('DockerBuild backend') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker') {
+                        dir('api') {
+                            sh "docker build -t adityashanbhag29/backend:${env.IMAGE_TAG} ."
+                            sh "docker push adityashanbhag29/backend:${env.IMAGE_TAG}"
+                        }
+                    }
+                }
+            }
+        }
+        stage('DockerBuild frontend') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker') {
+                        dir('client') {
+                            sh "docker build -t adityashanbhag29/frontend:${env.IMAGE_TAG} ."
+                            sh "docker push adityashanbhag29/frontend:${env.IMAGE_TAG}"
+                        }
+                    }
+                }
+            }
+        }
+        
+                  stage('Aprove') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    input message: 'Approve deployment to Production?' , ok: 'Deploy'
+                }
+ 
+            }
+        }
+                
+
+        stage('Update Kubernetes Manifests') {
+        steps {
+            script {
+                sh """ 
+                yq e -i '.spec.template.spec.containers[0].image = "adityashanbhag29/backend:${IMAGE_TAG}"' k8s/backend.yaml
+                yq e -i '.spec.template.spec.containers[0].image = "adityashanbhag29/frontend:${IMAGE_TAG}"' k8s/frontend.yaml
+                """
+            }
+        }
+        }
+        
+     stage('Commit and Push Updated Manifests') {
+    steps {
+        script {
+            withCredentials([usernamePassword(credentialsId: 'gitcicd', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                sh '''
+
+                git config user.name "jenkins"
+                git config user.email "jenkins@local"
+                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/adi-github07/prod.git
+
+                git add k8s/*.yaml
+                git commit -m "Update manifests with ${IMAGE_TAG}" || echo "No changes to commit"
+
+                git push origin main
+                '''
+            }
+        }
+    }
+}
+
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pipeline {
+    agent any
+    
+    tools {
+        nodejs 'nodejs23'
+    }
+
+
+
+
+
+
+
+
+
+    }
+}

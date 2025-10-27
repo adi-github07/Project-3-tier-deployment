@@ -107,7 +107,7 @@ pipeline {
         stage('deployment') {
             steps {
                 script {
-                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-pord-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://C55A73A0902908988EC14430F93D07CA.gr7.ap-south-1.eks.amazonaws.com') {
+                    withKubeConfig(caCertificate: '', clusterName: 'cicd-cluster', contextName: '', credentialsId: 'k8-pord-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://C55A73A0902908988EC14430F93D07CA.gr7.ap-south-1.eks.amazonaws.com') {
                         sh 'kubectl apply -f k8s-prod/sc.yaml -n cicd'
                         sleep 30
 			sh 'kubectl apply -f k8s/secret.yaml -n cicd'
@@ -127,7 +127,7 @@ pipeline {
         stage('deployment get pods') {
             steps {
                 script {
-                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-pord-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://C55A73A0902908988EC14430F93D07CA.gr7.ap-south-1.eks.amazonaws.com') {
+                    withKubeConfig(caCertificate: '', clusterName: 'cicd-cluster', contextName: '', credentialsId: 'k8-pord-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://C55A73A0902908988EC14430F93D07CA.gr7.ap-south-1.eks.amazonaws.com') {
                         sh 'kubectl get pods -n prod'
                         sleep 10
                         sh 'kubectl get ingress -n prod'

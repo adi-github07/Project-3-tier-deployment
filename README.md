@@ -66,3 +66,32 @@ nslookup <ELB>
    ```
 
 The above helps to verify IP and ELB.By using ELB, we create a Cname record where we add the ELB address to our DNS provider
+
+
+
+13. JENKINSFILE_CI (K8s-deploy)
+
+      - Checks out the code from Git.
+
+      - Runs scans (Trivy, Gitleaks, etc.) for vulnerabilities and secrets.
+
+      - Builds Docker images and pushes them using the latest tag.
+
+      - Deploys all Kubernetes manifests directly to the cluster.
+      Good for quick deployments where you don’t need versioned images.
+
+14. JENKINSFILE_CI (K8s-update)
+
+      - Checks out the code from Git.
+
+      - Generates a short Git commit SHA using:
+
+      - git rev-parse --short HEAD
+
+
+      - Uses this SHA as a unique Docker image tag and pushes  images to Docker Hub.
+
+      - Updates Kubernetes manifest files (deployment.yaml) to use this new image tag.
+
+      - Commits and pushes the updated manifests back to Git.
+        This creates a traceable deployment, linking every    Kubernetes update to a specific Git commit.
