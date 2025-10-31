@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: adityashanbhag29/frontend:7dedf55
+          image: adityashanbhag29/frontend:e58e49c
           ports:
             - containerPort: 80
 ---
@@ -34,4 +34,4 @@ spec:
   template:
     spec:
       containers:
-        - image: adityashanbhag29/frontend:7dedf55
+        - image: adityashanbhag29/frontend:e58e49c
