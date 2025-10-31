@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: adityashanbhag29/backend:e7f6939
+          image: adityashanbhag29/backend:b70a7e6
           ports:
             - containerPort: 5000
           env:
@@ -52,4 +52,4 @@ spec:
   template:
     spec:
       containers:
-        - image: adityashanbhag29/backend:e7f6939
+        - image: adityashanbhag29/backend:b70a7e6
