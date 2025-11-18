@@ -49,7 +49,4 @@ spec:
       targetPort: 5000
   selector:
     app: backend
-  template:
-    spec:
-      containers:
-        - image: adityashanbhag29/backend:496786b
+
